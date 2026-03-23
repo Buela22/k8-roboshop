@@ -1,0 +1,72 @@
+apiversion: v1
+kind: config-map
+metadata:
+  name: shipping
+  namespace: roboshop
+data:
+  CART_ENDPOINT: "cart:8080"
+  DB_HOST: "mysql"
+---
+apiversion: apps/v1
+kind: Deployment
+metadata:
+  name: shipping
+  namespace: roboshop
+  # these are replica set lables
+  labels:
+    project: roboshop
+    component: shipping
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+  # these lables are used to select pods
+    matchLabels:
+       project: roboshop
+       component: shipping
+       tier: backend
+      #pod definition
+  template:
+    metadata:
+      lables:
+         project: roboshop
+         component: shipping
+         tier: backend
+    spec:
+      containers:
+      - name: shipping
+        image: buela22/shipping:v1
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: shipping
+        ports:
+        - name: liveness-port
+        containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: liveness-port
+          failureThreshold: 1
+          periodSeconds: 15
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: liveness-port
+          failureThreshold: 1
+          periodSeconds: 15
+---
+apiversion: v1
+kind: service
+metadata:
+  name: shipping
+  namespace: roboshop
+spec:
+  selector:
+    project: roboshop
+    component: shipping
+    tier: backend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

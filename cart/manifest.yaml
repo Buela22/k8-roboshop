@@ -1,0 +1,73 @@
+apiversion: v1
+kind: config-map
+metadata:
+  name: cart
+  namespace: roboshop
+data:
+  REDIS_HOST: "redis"
+  CATALOGUE_HOST: "catalogue"
+  CATALOGUE_PORT: "8080"
+---
+apiversion: apps/v1
+kind: Deployment
+metadata:
+  name: cart
+  namespace: roboshop
+  # these are replica set lables
+  labels:
+    project: roboshop
+    component: cart
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+  # these lables are used to select pods
+    matchLabels:
+       project: roboshop
+       component: cart
+       tier: backend
+      #pod definition
+  template:
+    metadata:
+      lables:
+         project: roboshop
+         component: cart
+         tier: backend
+    spec:
+      containers:
+      - name: cart
+        image: buela22/cart:v1
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: cart
+        ports:
+        - name: liveness-port
+        containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: liveness-port
+          failureThreshold: 1
+          periodSeconds: 15
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: liveness-port
+          failureThreshold: 1
+          periodSeconds: 15
+---
+apiversion: v1
+kind: service
+metadata:
+  name: cart
+  namespace: roboshop
+spec:
+  selector:
+    project: roboshop
+    component: cart
+    tier: backend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
