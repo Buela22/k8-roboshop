@@ -1,9 +1,9 @@
-apiversion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
   namespace: roboshop
-  # these are replica set lables
+  # these are replica set labels
   labels:
     project: roboshop
     component: redis
@@ -11,22 +11,22 @@ metadata:
 spec:
   replicas: 1
   selector:
-  # these lables are used to select pods
+    # these labels are used to select pods
     matchLabels:
-       project: roboshop
-       component: redis
-       tier: db
-      #pod definition
+      project: roboshop
+      component: redis
+      tier: db
+  # pod definition
   template:
     metadata:
-      lables:
-         project: roboshop
-         component: redis
-         tier: db
+      labels:
+        project: roboshop
+        component: redis
+        tier: db
     spec:
       containers:
       - name: redis
-        image: buela22/redis:7.0
+        image: redis:7.0
         imagePullPolicy: Always
         readinessProbe:
           tcpSocket:
@@ -36,11 +36,11 @@ spec:
         livenessProbe:
           tcpSocket:
             port: 6379
-          initialDelaySeconds: 20
-          periodSeconds: 10
+          initialDelaySeconds: 5
+          periodSeconds: 5
 ---
-apiversion: v1
-kind: service
+apiVersion: v1
+kind: Service
 metadata:
   name: redis
   namespace: roboshop
@@ -51,5 +51,5 @@ spec:
     tier: db
   ports:
     - protocol: TCP
-      port: 6379
-      targetPort: 6379
+      port: 6379 # service port
+      targetPort: 6379 # container port

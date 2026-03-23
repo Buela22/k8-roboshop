@@ -1,5 +1,5 @@
-apiversion: v1
-kind: config-map
+apiVersion: v1
+kind: ConfigMap
 metadata:
   name: payment
   namespace: roboshop
@@ -12,12 +12,12 @@ data:
   AMQP_USER: "roboshop"
   AMQP_PASS: "roboshop123"
 ---
-apiversion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: payment
   namespace: roboshop
-  # these are replica set lables
+  # these are replica set labels
   labels:
     project: roboshop
     component: payment
@@ -25,29 +25,29 @@ metadata:
 spec:
   replicas: 1
   selector:
-  # these lables are used to select pods
+    # these labels are used to select pods
     matchLabels:
-       project: roboshop
-       component: payment
-       tier: backend
-      #pod definition
+      project: roboshop
+      component: payment
+      tier: backend
+  # pod definition
   template:
     metadata:
-      lables:
-         project: roboshop
-         component: payment
-         tier: backend
+      labels:
+        project: roboshop
+        component: payment
+        tier: backend
     spec:
       containers:
       - name: payment
-        image: buela22/payment:v1
+        image: joindevops/payment:v1
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
             name: payment
         ports:
         - name: liveness-port
-        containerPort: 8080
+          containerPort: 8080
         readinessProbe:
           httpGet:
             path: /health
@@ -61,8 +61,8 @@ spec:
           failureThreshold: 1
           periodSeconds: 15
 ---
-apiversion: v1
-kind: service
+apiVersion: v1
+kind: Service
 metadata:
   name: payment
   namespace: roboshop
@@ -73,5 +73,5 @@ spec:
     tier: backend
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 8080 # service port
+      targetPort: 8080 # container port
