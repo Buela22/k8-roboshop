@@ -19,7 +19,7 @@ spec:
       #pod definition
   template:
     metadata:
-      lables:
+      labels:
          project: roboshop
          component: mongodb
          tier: db
